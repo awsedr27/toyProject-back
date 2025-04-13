@@ -1,35 +1,31 @@
 package com.toy.toyback.controller;
 
-import com.toy.toyback.entity.UserEntity;
-import com.toy.toyback.jwt.JwtProvider;
-import com.toy.toyback.repository.UserRepository;
+import com.toy.toyback.service.AuthService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.net.URI;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/auth")
 public class LoginController {
 
-    private final UserRepository userRepository;
-    private final JwtProvider jwtProvider;
+    private final AuthService authService;
 
-    @PostMapping("/login")
-    public String login(@RequestBody UserEntity request) {
-
-        UserEntity user = userRepository.findByUserId(request.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
-
-        if (!user.getPassword().equals(request.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+    /**
+     * 인가 코드 발급 → Redirect
+     */
+    @GetMapping("/authorize")
+    public ResponseEntity<?> authorize(@RequestParam("client_id") String clientId, @RequestParam("redirect_uri") String redirectUri, @RequestParam("response_type") String responseType) {
+        if (!"code".equalsIgnoreCase(responseType)) {
+            return ResponseEntity.badRequest().body("Unsupported response_type");
         }
 
-        // JWT 토큰 생성
-        String token = jwtProvider.generateAccessTokenWithRole(user.getUserName(), user.getUserRole());
-
-        return token;
+        String code = authService.generateAuthorizationCode(clientId, redirectUri);
+        URI redirect = URI.create(redirectUri + "?code=" + code);
+        return ResponseEntity.status(HttpStatus.FOUND).location(redirect).build();
     }
 }

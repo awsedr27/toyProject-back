@@ -33,7 +33,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if(token != null && !token.isEmpty()) {
             String jwtToken = token.substring(7);
 
-            username = jwtProvider.getUsernameFromToken(jwtToken);
+            username =  jwtProvider.getSubject(jwtToken);
         }
 
         // token 검증 완료 후 SecurityContextHolder 내 인증 정보가 없는 경우 저장
@@ -48,17 +48,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     /**
      * token의 사용자 idx를 이용하여 사용자 정보 조회하고, UsernamePasswordAuthenticationToken 생성
      *
-     * @param userName 사용자 idx
+     * @param clientId 사용자 idx
      * @return 사용자 UsernamePasswordAuthenticationToken
      */
-    private UsernamePasswordAuthenticationToken getUserAuth(String userName) {
-        var user = userRepository.findByUserId(userName)
+    private UsernamePasswordAuthenticationToken getUserAuth(String clientId) {
+        var user = userRepository.findByClientId(clientId)
                 .orElseThrow(() -> new RuntimeException("사용자 없음"));
 
         return new UsernamePasswordAuthenticationToken(
-                user.getUserId(),
+                user.getClientId(),
                 null,
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getUserRole()))
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_APP"))
         );
     }
 }

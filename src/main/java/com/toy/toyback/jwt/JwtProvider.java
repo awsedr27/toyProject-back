@@ -17,191 +17,161 @@ import java.util.function.Function;
 @Component
 @Slf4j
 public class JwtProvider {
-    // jwt 만료 시간 1시간
-    private static final long JWT_TOKEN_VALID = (long) 1000 * 60 * 30;
+
+    private static final long ACCESS_TOKEN_VALIDITY_MS = 1000 * 60 * 30;  // 30분
+    private static final long REFRESH_TOKEN_VALIDITY_MS = 1000 * 60 * 60 * 24;  // 24시간
 
     @Value("${jwt.secret}")
     private String secret;
 
     private SecretKey key;
 
+    /**
+     * JWT 암호화에 사용할 SecretKey 초기화
+     */
     @PostConstruct
     public void init() {
         key = Keys.hmacShaKeyFor(secret.getBytes());
     }
+
+    // ============================================================================
+    // 토큰 생성
+    // ============================================================================
+
     /**
-     * token Username 조회
+     * Access Token 생성 (역할 포함)
      *
-     * @param token JWT
-     * @return token Username
+     * @param subject 토큰 소유자 식별값 (ex. clientId, userId 등)
+     * @param role    사용자 권한 정보
+     * @return Access Token 문자열
      */
-    public String getUsernameFromToken(final String token) {
-        return getClaimFromToken(token, Claims::getId);
+    public String generateAccessToken(String subject, UserRole role) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", role.name());
+        claims.put("token_type", "access");
+        return generateToken(subject, claims, ACCESS_TOKEN_VALIDITY_MS);
     }
 
     /**
-     * token 사용자 속성 정보 조회
+     * Refresh Token 생성
      *
-     * @param token JWT
-     * @param claimsResolver Get Function With Target Claim
-     * @param <T> Target Claim
-     * @return 사용자 속성 정보
+     * @param subject 토큰 소유자 식별값
+     * @return Refresh Token 문자열
      */
-    public <T> T getClaimFromToken(final String token, final Function<Claims, T> claimsResolver) {
-        // token 유효성 검증
-        if(Boolean.FALSE.equals(validateToken(token)))
-            return null;
-
-        final Claims claims = getAllClaimsFromToken(token);
-
-        return claimsResolver.apply(claims);
+    public String generateRefreshToken(String subject) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("token_type", "refresh");
+        return generateToken(subject, claims, REFRESH_TOKEN_VALIDITY_MS);
     }
 
     /**
-     * token 사용자 모든 속성 정보 조회
+     * JWT Token 생성 공통 메서드
      *
-     * @param token JWT
-     * @return All Claims
+     * @param subject    토큰 소유자 식별값
+     * @param claims     추가 클레임 정보
+     * @param validityMs 유효 기간 (ms)
+     * @return JWT 문자열
      */
-    private Claims getAllClaimsFromToken(final String token) {
+    private String generateToken(String subject, Map<String, Object> claims, long validityMs) {
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + validityMs);
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(subject)
+                .setIssuedAt(now)
+                .setExpiration(expiry)
+                .signWith(key)
+                .compact();
+    }
+
+    // ============================================================================
+    // 토큰 검증 및 정보 추출
+    // ============================================================================
+
+    /**
+     * JWT 유효성 검증
+     *
+     * @param token JWT 문자열
+     * @return 유효한 경우 true, 아니면 false
+     */
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            return true;
+        } catch (SecurityException | MalformedJwtException |
+                ExpiredJwtException | UnsupportedJwtException |
+                IllegalArgumentException e) {
+            log.warn("Invalid JWT: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * 토큰에서 subject 추출
+     *
+     * @param token JWT 문자열
+     * @return subject 값
+     */
+    public String getSubject(String token) {
+        return getClaim(token, Claims::getSubject);
+    }
+
+    /**
+     * 토큰의 만료 시간 추출
+     *
+     * @param token JWT 문자열
+     * @return 만료 일시
+     */
+    public Date getExpiration(String token) {
+        return getClaim(token, Claims::getExpiration);
+    }
+
+    /**
+     * 토큰의 타입(access / refresh) 추출
+     *
+     * @param token JWT 문자열
+     * @return token_type 클레임 값
+     */
+    public String getTokenType(String token) {
+        return getAllClaims(token).get("token_type", String.class);
+    }
+
+    /**
+     * 토큰의 사용자 역할(role) 추출
+     *
+     * @param token JWT 문자열
+     * @return role 클레임 값
+     */
+    public String getRole(String token) {
+        return getAllClaims(token).get("role", String.class);
+    }
+
+    /**
+     * 토큰에서 특정 클레임 정보 추출 (제네릭 처리)
+     *
+     * @param token    JWT 문자열
+     * @param resolver 클레임 추출 함수
+     * @param <T>      클레임 반환 타입
+     * @return 추출된 값
+     */
+    private <T> T getClaim(String token, Function<Claims, T> resolver) {
+        if (!validateToken(token)) return null;
+        Claims claims = getAllClaims(token);
+        return resolver.apply(claims);
+    }
+
+    /**
+     * 토큰 전체 클레임 추출
+     *
+     * @param token JWT 문자열
+     * @return Claims 객체
+     */
+    private Claims getAllClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
-
-    /**
-     * 토큰 만료 일자 조회
-     *
-     * @param token JWT
-     * @return 만료 일자
-     */
-    public Date getExpirationDateFromToken(final String token) {
-        return getClaimFromToken(token, Claims::getExpiration);
-    }
-
-    /**
-     * access token 생성
-     *
-     * @param id token 생성 id
-     * @return access token
-     */
-    public String generateAccessToken(final String id) {
-        return generateAccessToken(id, new HashMap<>());
-    }
-
-    /**
-     * access token 생성
-     *
-     * @param id token 생성 id
-     * @return access token
-     */
-    public String generateAccessToken(final long id) {
-        return generateAccessToken(String.valueOf(id), new HashMap<>());
-    }
-
-    /**
-     * access token 생성
-     *
-     * @param id token 생성 id
-     * @param claims token 생성 claims
-     * @return access token
-     */
-    public String generateAccessToken(final String id, final Map<String, Object> claims) {
-        return doGenerateAccessToken(id, claims);
-    }
-
-    /**
-     * access token 생성
-     *
-     * @param id token 생성 id
-     * @param role token 생성 role
-     * @return access token
-     */
-    public String generateAccessTokenWithRole(final String id, final UserRole role) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("role", role);
-        return generateAccessToken(id, claims);
-    }
-    /**
-     * JWT access token 생성
-     *
-     * @param id token 생성 id
-     * @param claims token 생성 claims
-     * @return access token
-     */
-    private String doGenerateAccessToken(final String id, final Map<String, Object> claims) {
-        return Jwts.builder()
-                .setClaims(claims)
-                .setId(id)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALID)) // 30분
-                .signWith(key)
-                .compact();
-    }
-
-    /**
-     * refresh token 생성
-     *
-     * @param id token 생성 id
-     * @return refresh token
-     */
-    public String generateRefreshToken(final String id) {
-        return doGenerateRefreshToken(id);
-    }
-
-    /**
-     * refresh token 생성
-     *
-     * @param id token 생성 id
-     * @return refresh token
-     */
-    public String generateRefreshToken(final long id) {
-        return doGenerateRefreshToken(String.valueOf(id));
-    }
-
-    /**
-     * refresh token 생성
-     *
-     * @param id token 생성 id
-     * @return refresh token
-     */
-    private String doGenerateRefreshToken(final String id) {
-        return Jwts.builder()
-                .setId(id)
-                .setExpiration(new Date(System.currentTimeMillis() + (JWT_TOKEN_VALID * 2) * 24)) // 24시간
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .signWith(key)
-                .compact();
-    }
-
-    /**
-     * token 검증
-     *
-     * @param token JWT
-     * @return token 검증 결과
-     */
-    public Boolean validateToken(final String token) {
-        try {
-            Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(token);
-            return true;
-        } catch (SecurityException e) {
-            log.warn("Invalid JWT signature: {}", e.getMessage());
-        } catch (MalformedJwtException e) {
-            log.warn("Invalid JWT token: {}", e.getMessage());
-        } catch (ExpiredJwtException e) {
-            log.warn("JWT token is expired: {}", e.getMessage());
-        } catch (UnsupportedJwtException e) {
-            log.warn("JWT token is unsupported: {}", e.getMessage());
-        } catch (IllegalArgumentException e) {
-            log.warn("JWT claims string is empty: {}", e.getMessage());
-        }
-
-        return false;
-    }
-
 }
