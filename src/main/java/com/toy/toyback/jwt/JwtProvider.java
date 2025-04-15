@@ -1,6 +1,6 @@
 package com.toy.toyback.jwt;
 
-import com.toy.toyback.entity.UserRole;
+import com.toy.toyback.entity.AppRole;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -45,7 +45,7 @@ public class JwtProvider {
      * @param role    사용자 권한 정보
      * @return Access Token 문자열
      */
-    public String generateAccessToken(String subject, UserRole role) {
+    public String generateAccessToken(String subject, AppRole role) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", role.name());
         claims.put("token_type", "access");

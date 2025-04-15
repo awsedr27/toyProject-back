@@ -1,6 +1,6 @@
 package com.toy.toyback.jwt;
 
-import com.toy.toyback.repository.UserRepository;
+import com.toy.toyback.repository.AppRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,7 +21,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
 
-    private final UserRepository userRepository;
+    private final AppRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
