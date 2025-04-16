@@ -1,5 +1,6 @@
 package com.toy.toyback.entity;
 
 public enum AppRole {
-    APP
+    APP,
+    ROLE_USER
 }
