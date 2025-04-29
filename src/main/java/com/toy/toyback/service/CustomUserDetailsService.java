@@ -26,7 +26,7 @@ public class CustomUserDetailsService  implements UserDetailsService {
         UserEntity userEntity = userRepository.findByUserId(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        // UserDetails 객체 반환
+        // UserDetails 객체 반환 , custom detail로 변화시킬 예정
         return new org.springframework.security.core.userdetails.User(
                 userEntity.getUserId(),
                 userEntity.getPassword(),

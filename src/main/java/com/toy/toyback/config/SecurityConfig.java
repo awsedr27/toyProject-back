@@ -44,15 +44,15 @@ public class SecurityConfig {
         // 경로 인가 작업
         httpSecurity
                 .authorizeHttpRequests((auth -> auth
-                        .requestMatchers("/login", "/", "/auth/**", "/join").permitAll()
+                        .requestMatchers("/users/login", "/", "/auth/**", "/join","/error","/users/test").permitAll()
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated()));
 
         // session 설정
         // JWT는 서버가 인증 상태를 기억하지 않고, 클라이언트가 매번 토큰을 보내야 하니까 session을 Sateless 처리
-        httpSecurity
+/*        httpSecurity
                 .sessionManagement((session) -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));*/
 
         return httpSecurity.build();
     }
