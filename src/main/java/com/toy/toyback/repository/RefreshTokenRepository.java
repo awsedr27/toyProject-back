@@ -28,4 +28,5 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
             "VALUES (:userEntity, :refreshToken, :createdAt, :updatedAt)")
     void insertRefreshToken(UserEntity userEntity, String refreshToken, LocalDateTime createdAt, LocalDateTime updatedAt);
 
+
 }

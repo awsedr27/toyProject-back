@@ -1,5 +1,6 @@
 package com.toy.toyback.controller;
 
+import com.toy.toyback.dto.LoginDto;
 import com.toy.toyback.dto.LoginRequest;
 import com.toy.toyback.dto.LoginResponse;
 import com.toy.toyback.entity.AppRole;
@@ -9,6 +10,7 @@ import com.toy.toyback.jwt.JwtProvider;
 import com.toy.toyback.repository.RefreshTokenRepository;
 import com.toy.toyback.repository.UserRepository;
 import com.toy.toyback.service.RefreshTokenService;
+import com.toy.toyback.service.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
@@ -35,52 +37,26 @@ import java.util.Optional;
 public class UserController {
 
 
-    private final AuthenticationManager authenticationManager;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+
+
     private final JwtProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
-
-    public UserController(AuthenticationManager authenticationManager, BCryptPasswordEncoder bCryptPasswordEncoder,
-                          JwtProvider jwtProvider,
-                          RefreshTokenService refreshTokenService) {
-        this.authenticationManager = authenticationManager;
-        this.bCryptPasswordEncoder= bCryptPasswordEncoder;
+    private final UserService userService;
+    public UserController(UserService userService,
+            JwtProvider jwtProvider,RefreshTokenService refreshTokenService) {
+        this.userService = userService;
         this.jwtProvider = jwtProvider;
         this.refreshTokenService = refreshTokenService;
     }
 
-    @PostMapping("test")
-    public ResponseEntity<LoginResponse> test() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        return ResponseEntity.ok(new LoginResponse(authentication.getName()));
-    }
-
-
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest, HttpServletRequest request, HttpServletResponse response) {
         try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            loginRequest.getUserId(),
-                            loginRequest.getPassword()
-                    )
-            );
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            // 인증된 사용자 정보에서 username 추출
-            UserDetails principal =(UserDetails)authentication.getPrincipal();
-            String jwtToken=jwtProvider.generateAccessToken(principal.getUsername(), AppRole.ROLE_USER);
+            LoginDto.TokenResponse rs = userService.login(loginRequest);
             // 응답 헤더에 JWT 토큰 포함
             HttpHeaders headers = new HttpHeaders();
-            headers.add("Authorization", "Bearer " + jwtToken);
-            //서비스로 넣을예정
-
-
-
-            String refreshToken = jwtProvider.generateRefreshToken(principal.getUsername());
-
-
-            ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken )
+            headers.add("Authorization", "Bearer " + rs.getAccessToken());
+            ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", rs.getRefreshToken())
                     .httpOnly(true)            // JS에서 접근 불가
                     //.secure(true)              // HTTPS 환경에서만 전송
                     .path("/users/refresh") // 사용할 경로 제한 (선택)
