@@ -1,6 +1,6 @@
 package com.toy.toyback.jwt;
 
-import com.toy.toyback.entity.AppRole;
+import com.toy.toyback.code.AppRole;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;

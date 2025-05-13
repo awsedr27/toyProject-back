@@ -1,12 +1,10 @@
-package com.toy.toyback.service;
+package com.toy.toyback.login.service;
 
-import com.toy.toyback.entity.RefreshToken;
+import com.toy.toyback.login.entity.RefreshTokenEntity;
 import com.toy.toyback.jwt.JwtProvider;
-import com.toy.toyback.repository.RefreshTokenRepository;
+import com.toy.toyback.login.repository.RefreshTokenRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 @Service
 public class RefreshTokenService {
@@ -20,12 +18,12 @@ public class RefreshTokenService {
     }
 
     @Transactional
-    public RefreshToken validateAndUpdateRefreshToken(String originRefreshToken) throws Exception{
+    public RefreshTokenEntity validateAndUpdateRefreshToken(String originRefreshToken) throws Exception{
         //리프레쉬토큰 검증
         String userId = jwtProvider.getSubject(originRefreshToken);
 
         //  DB에서 해당 유저의 리프레시 토큰 조회
-        RefreshToken storedRefreshToken = refreshTokenRepository.findByUserEntity_UserId(userId)
+        RefreshTokenEntity storedRefreshToken = refreshTokenRepository.findByUserEntity_UserId(userId)
                 .orElseThrow(() -> new RuntimeException("리프레시 토큰이 등록되지 않았습니다."));
 
         if(!storedRefreshToken.getRefreshToken().equals(originRefreshToken)) {

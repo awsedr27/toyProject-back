@@ -1,7 +1,7 @@
-package com.toy.toyback.repository;
+package com.toy.toyback.login.repository;
 
-import com.toy.toyback.entity.RefreshToken;
-import com.toy.toyback.entity.UserEntity;
+import com.toy.toyback.login.entity.RefreshTokenEntity;
+import com.toy.toyback.login.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -10,10 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
+public interface RefreshTokenRepository extends JpaRepository<RefreshTokenEntity, Long> {
 
     // user_id로 리프레시 토큰을 조회하는 메소드
-    Optional<RefreshToken> findByUserEntity_UserId(String userId);
+    Optional<RefreshTokenEntity> findByUserEntity_UserId(String userId);
 
 //    // 리프레시 토큰을 삭제하는 메소드 (필요 시 추가)
 //    void deleteByUserId(Long userId);

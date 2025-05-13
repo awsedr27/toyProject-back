@@ -1,12 +1,12 @@
-package com.toy.toyback.service;
+package com.toy.toyback.login.service;
 
-import com.toy.toyback.dto.LoginDto;
-import com.toy.toyback.dto.LoginRequest;
-import com.toy.toyback.entity.AppRole;
-import com.toy.toyback.entity.RefreshToken;
+import com.toy.toyback.login.dto.LoginDto;
+import com.toy.toyback.login.dto.LoginRequest;
+import com.toy.toyback.code.AppRole;
+import com.toy.toyback.login.entity.RefreshTokenEntity;
 import com.toy.toyback.jwt.JwtProvider;
-import com.toy.toyback.repository.RefreshTokenRepository;
-import com.toy.toyback.repository.UserRepository;
+import com.toy.toyback.login.repository.RefreshTokenRepository;
+import com.toy.toyback.login.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -56,7 +56,7 @@ public class UserService {
                     refreshTokenRepository.save(existingToken);
                 },
                 () -> {
-                    RefreshToken newToken = new RefreshToken();
+                    RefreshTokenEntity newToken = new RefreshTokenEntity();
                     newToken.setUserEntity(userRepository.findByUserId(principal.getUsername())
                             .orElseThrow(() -> new UsernameNotFoundException("User not found for userId: " + principal.getUsername())));
                     newToken.setRefreshToken(refreshToken);

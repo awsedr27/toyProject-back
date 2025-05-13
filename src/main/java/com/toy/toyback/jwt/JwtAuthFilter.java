@@ -1,6 +1,6 @@
 package com.toy.toyback.jwt;
 
-import com.toy.toyback.repository.AppRepository;
+import com.toy.toyback.login.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,8 +20,7 @@ import java.util.Collections;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
-
-    private final AppRepository userRepository;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -48,15 +47,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     /**
      * token의 사용자 idx를 이용하여 사용자 정보 조회하고, UsernamePasswordAuthenticationToken 생성
      *
-     * @param clientId 사용자 idx
+     * @param userId 사용자 idx
      * @return 사용자 UsernamePasswordAuthenticationToken
      */
-    private UsernamePasswordAuthenticationToken getUserAuth(String clientId) {
-        var user = userRepository.findByClientId(clientId)
+    private UsernamePasswordAuthenticationToken getUserAuth(String userId) {
+        var user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("사용자 없음"));
 
         return new UsernamePasswordAuthenticationToken(
-                user.getClientId(),
+                user.getUserId(),
                 null,
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_APP"))
         );

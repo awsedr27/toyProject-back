@@ -1,49 +1,35 @@
-package com.toy.toyback.controller;
+package com.toy.toyback.login.controller;
 
-import com.toy.toyback.dto.LoginDto;
-import com.toy.toyback.dto.LoginRequest;
-import com.toy.toyback.dto.LoginResponse;
-import com.toy.toyback.entity.AppRole;
-import com.toy.toyback.entity.RefreshToken;
-import com.toy.toyback.entity.UserEntity;
+import com.toy.toyback.login.dto.LoginDto;
+import com.toy.toyback.login.dto.LoginRequest;
+import com.toy.toyback.login.dto.LoginResponse;
+import com.toy.toyback.code.AppRole;
+import com.toy.toyback.login.entity.RefreshTokenEntity;
 import com.toy.toyback.jwt.JwtProvider;
-import com.toy.toyback.repository.RefreshTokenRepository;
-import com.toy.toyback.repository.UserRepository;
-import com.toy.toyback.service.RefreshTokenService;
-import com.toy.toyback.service.UserService;
+import com.toy.toyback.login.service.RefreshTokenService;
+import com.toy.toyback.login.service.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 import java.time.Duration;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
 
-
-
-
     private final JwtProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
     private final UserService userService;
-    public UserController(UserService userService,
-            JwtProvider jwtProvider,RefreshTokenService refreshTokenService) {
+    public UserController(UserService userService, JwtProvider jwtProvider, RefreshTokenService refreshTokenService) {
         this.userService = userService;
         this.jwtProvider = jwtProvider;
         this.refreshTokenService = refreshTokenService;
@@ -96,7 +82,7 @@ public class UserController {
                     if ("refreshToken".equals(cookie.getName())) {
                         String originRefreshToken=cookie.getValue();
                         //리프레쉬 토큰 검증 및 재발급 서비스
-                        RefreshToken newRefreshToken=refreshTokenService.validateAndUpdateRefreshToken(originRefreshToken);
+                        RefreshTokenEntity newRefreshToken=refreshTokenService.validateAndUpdateRefreshToken(originRefreshToken);
 
                         //엑세스토큰 재발급
                         String jwtToken=jwtProvider.generateAccessToken(newRefreshToken.getUserEntity().getUserId(), AppRole.ROLE_USER);

@@ -1,8 +1,8 @@
-package com.toy.toyback.service;
+package com.toy.toyback.login.service;
 
-import com.toy.toyback.entity.AppRole;
-import com.toy.toyback.entity.UserEntity;
-import com.toy.toyback.repository.UserRepository;
+import com.toy.toyback.code.AppRole;
+import com.toy.toyback.login.entity.UserEntity;
+import com.toy.toyback.login.repository.UserRepository;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

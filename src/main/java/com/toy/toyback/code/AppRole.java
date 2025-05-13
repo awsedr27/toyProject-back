@@ -1,4 +1,4 @@
-package com.toy.toyback.entity;
+package com.toy.toyback.code;
 
 public enum AppRole {
     APP,

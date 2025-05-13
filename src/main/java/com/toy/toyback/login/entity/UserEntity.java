@@ -1,4 +1,4 @@
-package com.toy.toyback.entity;
+package com.toy.toyback.login.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
