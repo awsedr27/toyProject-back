@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,11 +30,20 @@ public class UserController {
     private final JwtProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
     private final UserService userService;
-    public UserController(UserService userService, JwtProvider jwtProvider, RefreshTokenService refreshTokenService) {
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    public UserController(UserService userService, JwtProvider jwtProvider, RefreshTokenService refreshTokenService,BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userService = userService;
         this.jwtProvider = jwtProvider;
         this.refreshTokenService = refreshTokenService;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
+    
+    @PostMapping("/test")
+    public ResponseEntity<LoginResponse> login() {
+        return ResponseEntity.ok()
+                .body(new LoginResponse(bCryptPasswordEncoder.encode("test").toString()));
+    }
+
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest, HttpServletRequest request, HttpServletResponse response) {
@@ -115,7 +125,7 @@ public class UserController {
                         // 인증 성공 응답 반환 (JWT 포함)
                         return ResponseEntity.ok()
                                 .headers(headers)
-                                .body(new LoginResponse("로그인 성공"));
+                                .body(new LoginResponse("재발급 성공"));
                     }
                 }
             }

@@ -22,11 +22,11 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshTokenEntity
 //    void deleteByExpiredAtBefore(java.time.LocalDateTime expiredAt);
 
     // user_id에 해당하는 리프레시 토큰을 삽입하는 쿼리
-    @Modifying
-    @Transactional
-    @Query("INSERT INTO RefreshToken (userEntity, refreshToken, createdAt,updatedAt) " +
-            "VALUES (:userEntity, :refreshToken, :createdAt, :updatedAt)")
-    void insertRefreshToken(UserEntity userEntity, String refreshToken, LocalDateTime createdAt, LocalDateTime updatedAt);
+//    @Modifying
+//    @Transactional
+//    @Query("INSERT INTO RefreshToken (userEntity, refreshToken, createdAt,updatedAt) " +
+//            "VALUES (:userEntity, :refreshToken, :createdAt, :updatedAt)")
+//    void insertRefreshToken(UserEntity userEntity, String refreshToken, LocalDateTime createdAt, LocalDateTime updatedAt);
 
 
 }

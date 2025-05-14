@@ -1,23 +1,28 @@
 package com.toy.toyback.config;
 
+import com.toy.toyback.jwt.JwtAuthFilter;
 import com.toy.toyback.login.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
-
-    public SecurityConfig(CustomUserDetailsService userDetailsService) {
+    private final JwtAuthFilter jwtAuthFilter;
+    
+    public SecurityConfig(CustomUserDetailsService userDetailsService,JwtAuthFilter jwtAuthFilter) {
         this.userDetailsService = userDetailsService;
+        this.jwtAuthFilter = jwtAuthFilter;
     }
 
     @Bean
@@ -43,7 +48,7 @@ public class SecurityConfig {
         // 경로 인가 작업
         httpSecurity
                 .authorizeHttpRequests((auth -> auth
-                        .requestMatchers("/users/login", "/", "/auth/**", "/join","/error","/users/test").permitAll()
+                        .requestMatchers("/users/login","/users/refresh", "/", "/auth/**", "/join","/error","/users/test").permitAll() //나중에 정리 필요
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated()));
 
