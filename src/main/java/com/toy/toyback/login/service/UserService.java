@@ -5,7 +5,9 @@ import com.toy.toyback.login.dto.LoginRequest;
 import com.toy.toyback.code.AppRole;
 import com.toy.toyback.login.entity.RefreshTokenEntity;
 import com.toy.toyback.jwt.JwtProvider;
+import com.toy.toyback.login.entity.SignUpEntity;
 import com.toy.toyback.login.repository.RefreshTokenRepository;
+import com.toy.toyback.login.repository.SignUpRepository;
 import com.toy.toyback.login.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,13 +26,15 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final JwtProvider jwtProvider;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final SignUpRepository signUpRepository;
     private final UserRepository userRepository;
 
-    public UserService(AuthenticationManager authenticationManager, JwtProvider jwtProvider, RefreshTokenRepository refreshTokenRepository
-    , UserRepository userRepository) {
+    public UserService(AuthenticationManager authenticationManager, JwtProvider jwtProvider, RefreshTokenRepository refreshTokenRepository, SignUpRepository signUpRepository
+            , UserRepository userRepository) {
         this.authenticationManager = authenticationManager;
         this.jwtProvider = jwtProvider;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.signUpRepository = signUpRepository;
         this.userRepository = userRepository;
     }
 
@@ -68,4 +72,12 @@ public class UserService {
         return new LoginDto.TokenResponse(accessToken, refreshToken);
     }
 
+    public String SignUp(SignUpEntity signUpEntity) {
+        Integer result =  signUpRepository.signUp(signUpEntity.getId(), signUpEntity.getPassword(), signUpEntity.getName());
+        if(result>0){
+            return "회원가입 성공";
+        }else{
+            return "회원가입 실패";
+        }
+    }
 }
