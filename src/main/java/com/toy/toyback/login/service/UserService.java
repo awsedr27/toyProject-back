@@ -6,6 +6,7 @@ import com.toy.toyback.code.AppRole;
 import com.toy.toyback.login.entity.RefreshTokenEntity;
 import com.toy.toyback.jwt.JwtProvider;
 import com.toy.toyback.login.entity.SignUpEntity;
+import com.toy.toyback.login.entity.UserEntity;
 import com.toy.toyback.login.repository.RefreshTokenRepository;
 import com.toy.toyback.login.repository.SignUpRepository;
 import com.toy.toyback.login.repository.UserRepository;
@@ -72,12 +73,15 @@ public class UserService {
         return new LoginDto.TokenResponse(accessToken, refreshToken);
     }
 
-    public String SignUp(SignUpEntity signUpEntity) {
-        Integer result =  signUpRepository.signUp(signUpEntity.getId(), signUpEntity.getPassword(), signUpEntity.getName());
-        if(result>0){
-            return "회원가입 성공";
-        }else{
-            return "회원가입 실패";
-        }
+    public String SignUp(UserEntity signUpEntity) {
+        //Integer result =  signUpRepository.signUp(signUpEntity.getId(), signUpEntity.getPassword(), signUpEntity.getName());
+    	UserEntity result= userRepository.save(signUpEntity);
+    	try {
+    	    userRepository.save(signUpEntity);
+    	    return "회원가입 성공";
+    	} catch (Exception e) {
+    	    // 로그 출력, 에러 핸들링
+    	    return "회원가입 실패: " + e.getMessage();
+    	}
     }
 }

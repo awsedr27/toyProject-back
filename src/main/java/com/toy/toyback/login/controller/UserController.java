@@ -8,6 +8,7 @@ import com.toy.toyback.login.dto.SignUpRequest;
 import com.toy.toyback.login.entity.RefreshTokenEntity;
 import com.toy.toyback.jwt.JwtProvider;
 import com.toy.toyback.login.entity.SignUpEntity;
+import com.toy.toyback.login.entity.UserEntity;
 import com.toy.toyback.login.service.RefreshTokenService;
 import com.toy.toyback.login.service.UserService;
 import jakarta.servlet.http.Cookie;
@@ -42,7 +43,7 @@ public class UserController {
 
     @PostMapping("/signup")
     public ResponseEntity<LoginResponse> signup(@RequestBody SignUpRequest signUpRequest, HttpServletRequest request, HttpServletResponse response) {
-        SignUpEntity signUpEntity = signUpRequest.toEntity(signUpRequest.getUserId(),signUpRequest.getPassword(),signUpRequest.getUserName());
+    	UserEntity signUpEntity = signUpRequest.toEntity();
         String rtMsg = userService.SignUp(signUpEntity);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer ");
