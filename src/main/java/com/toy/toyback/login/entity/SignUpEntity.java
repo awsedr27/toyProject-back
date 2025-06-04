@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
 public class SignUpEntity {
 
     @Id
-    @Column(name = "id", length = 50, nullable = false)
+    @Column(name = "user_id", length = 50, nullable = false)
     private String id;
 
     @Column(name = "password", nullable = false, length = 255)

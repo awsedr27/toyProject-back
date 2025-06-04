@@ -4,17 +4,16 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://172.18.25.141:5432/toyDatabase
-    username: myuser
-    password: myuser
-
+    url: jdbc:postgresql://ep-autumn-rice-a10nv5gd-pooler.ap-southeast-1.aws.neon.tech:5432/neondb?sslmode=require
+    username: neondb_owner
+    password: npg_fzVoNZ8k2pdl
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     properties:
       hibernate:
-        format_sql: false
+        format_sql: update
 
 jwt:
   secret: NfWbUeYf3KxYFvD0c9N0+jEwTUzpYx3NbyX+PRT7c1pTCNy+xUJtbv9n==

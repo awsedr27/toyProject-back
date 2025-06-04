@@ -15,6 +15,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -28,14 +30,16 @@ public class UserService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final SignUpRepository signUpRepository;
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public UserService(AuthenticationManager authenticationManager, JwtProvider jwtProvider, RefreshTokenRepository refreshTokenRepository, SignUpRepository signUpRepository
-            , UserRepository userRepository) {
+            , UserRepository userRepository,  PasswordEncoder passwordEncoder) {
         this.authenticationManager = authenticationManager;
         this.jwtProvider = jwtProvider;
         this.refreshTokenRepository = refreshTokenRepository;
         this.signUpRepository = signUpRepository;
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public LoginDto.TokenResponse login(LoginRequest loginRequest) {
@@ -51,7 +55,6 @@ public class UserService {
 
         String accessToken = jwtProvider.generateAccessToken(principal.getUsername(), AppRole.ROLE_USER);
         String refreshToken = jwtProvider.generateRefreshToken(principal.getUsername());
-
 
         refreshTokenRepository.findByUserEntity_UserId(principal.getUsername()).ifPresentOrElse(
                 existingToken -> {
@@ -73,11 +76,15 @@ public class UserService {
     }
 
     public String SignUp(SignUpEntity signUpEntity) {
-        Integer result =  signUpRepository.signUp(signUpEntity.getId(), signUpEntity.getPassword(), signUpEntity.getName());
-        if(result>0){
-            return "회원가입 성공";
-        }else{
-            return "회원가입 실패";
-        }
+        String userPassword = signUpEntity.getPassword();
+        String encodedPassword = passwordEncoder.encode(userPassword);
+
+        Integer result = signUpRepository.signUp(
+                signUpEntity.getId(),
+                encodedPassword,
+                signUpEntity.getName()
+        );
+
+        return result > 0 ? "회원가입 성공" : "회원가입 실패";
     }
 }
