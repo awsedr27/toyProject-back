@@ -48,7 +48,7 @@ public class SecurityConfig {
         // 경로 인가 작업
         httpSecurity
                 .authorizeHttpRequests((auth -> auth
-                        .requestMatchers("/users/login","/users/refresh","/users/signup", "/", "/auth/**", "/join","/error","/users/test").permitAll() //나중에 정리 필요
+                        .requestMatchers("/users/login","/test/sampleData","/users/refresh","/users/signup", "/", "/auth/**", "/join","/error","/users/test").permitAll() //나중에 정리 필요
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated()));
 
