@@ -6,6 +6,7 @@ import com.toy.toyback.code.AppRole;
 import com.toy.toyback.login.entity.RefreshTokenEntity;
 import com.toy.toyback.jwt.JwtProvider;
 import com.toy.toyback.login.entity.SignUpEntity;
+import com.toy.toyback.login.entity.UserEntity;
 import com.toy.toyback.login.repository.RefreshTokenRepository;
 import com.toy.toyback.login.repository.SignUpRepository;
 import com.toy.toyback.login.repository.UserRepository;
@@ -86,5 +87,6 @@ public class UserService {
         );
 
         return result > 0 ? "회원가입 성공" : "회원가입 실패";
+
     }
 }
