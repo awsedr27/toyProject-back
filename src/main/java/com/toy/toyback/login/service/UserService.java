@@ -76,12 +76,12 @@ public class UserService {
         return new LoginDto.TokenResponse(accessToken, refreshToken);
     }
 
-    public String SignUp(SignUpEntity signUpEntity) {
+    public String SignUp(UserEntity signUpEntity) {
         String userPassword = signUpEntity.getPassword();
         String encodedPassword = passwordEncoder.encode(userPassword);
 
         Integer result = signUpRepository.signUp(
-                signUpEntity.getId(),
+                signUpEntity.getUserId(),
                 encodedPassword,
                 signUpEntity.getName()
         );
