@@ -10,6 +10,7 @@ import com.toy.toyback.login.service.RefreshTokenService;
 import com.toy.toyback.login.service.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -39,7 +40,7 @@ public class UserController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<LoginResponse> signup(@RequestBody SignUpRequest signUpRequest, HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<LoginResponse> signup(@RequestBody @Valid SignUpRequest signUpRequest, HttpServletRequest request, HttpServletResponse response) {
     	UserEntity signUpEntity = signUpRequest.toEntity();
         String rtMsg = userService.SignUp(signUpEntity);
         HttpHeaders headers = new HttpHeaders();
@@ -72,7 +73,13 @@ public class UserController {
             LoginDto.TokenResponse rs = userService.login(loginRequest);
             // 응답 헤더에 JWT 토큰 포함
             HttpHeaders headers = new HttpHeaders();
-            headers.add("Authorization", "Bearer " + rs.getAccessToken());
+            ResponseCookie jwtCookie = ResponseCookie.from("jwtToken", rs.getAccessToken())
+                    .httpOnly(true)            // JS에서 접근 불가
+                    //.secure(true)              // HTTPS 환경에서만 전송
+                    .path("/users/refresh") // 사용할 경로 제한 (선택)
+                    .maxAge(Duration.ofMinutes(30))
+                    //.sameSite("Strict")        // CSRF 보호 강화
+                    .build();
             ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", rs.getRefreshToken())
                     .httpOnly(true)            // JS에서 접근 불가
                     //.secure(true)              // HTTPS 환경에서만 전송
@@ -82,6 +89,7 @@ public class UserController {
                     .build();
             // 인증 성공 응답 헤더 반환(refresh token)
             response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+            response.addHeader(HttpHeaders.SET_COOKIE, jwtCookie.toString());
             // 인증 성공 응답 반환 (JWT 포함)
             return ResponseEntity.ok()
                     .headers(headers)

@@ -79,7 +79,9 @@ public class UserService {
     public String SignUp(UserEntity signUpEntity) {
         String userPassword = signUpEntity.getPassword();
         String encodedPassword = passwordEncoder.encode(userPassword);
-
+        if (userRepository.existsByUserId(signUpEntity.getUserId())) {
+            return "회원가입 실패: 이미 존재하는 사용자 ID입니다.";
+        }
         Integer result = signUpRepository.signUp(
                 signUpEntity.getUserId(),
                 encodedPassword,
