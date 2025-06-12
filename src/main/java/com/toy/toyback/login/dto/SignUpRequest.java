@@ -1,8 +1,6 @@
 package com.toy.toyback.login.dto;
 
 import java.time.LocalDateTime;
-
-import com.toy.toyback.login.entity.SignUpEntity;
 import com.toy.toyback.login.entity.UserEntity;
 
 import lombok.AllArgsConstructor;

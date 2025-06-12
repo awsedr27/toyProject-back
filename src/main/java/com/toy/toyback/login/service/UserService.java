@@ -1,5 +1,6 @@
 package com.toy.toyback.login.service;
 
+import com.toy.toyback.login.dto.IdCheckRequest;
 import com.toy.toyback.login.dto.LoginDto;
 import com.toy.toyback.login.dto.LoginRequest;
 import com.toy.toyback.code.AppRole;
@@ -24,7 +25,6 @@ import java.time.LocalDateTime;
 
 @Service
 public class UserService {
-
 
     private final AuthenticationManager authenticationManager;
     private final JwtProvider jwtProvider;
@@ -85,8 +85,10 @@ public class UserService {
                 encodedPassword,
                 signUpEntity.getName()
         );
-
         return result > 0 ? "회원가입 성공" : "회원가입 실패";
+    }
 
+    public boolean existsUserId(IdCheckRequest idCheckRequest) {
+        return userRepository.existsByUserId(idCheckRequest.getUserId());
     }
 }

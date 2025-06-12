@@ -1,10 +1,7 @@
 package com.toy.toyback.login.controller;
 
-import com.toy.toyback.login.dto.LoginDto;
-import com.toy.toyback.login.dto.LoginRequest;
-import com.toy.toyback.login.dto.LoginResponse;
+import com.toy.toyback.login.dto.*;
 import com.toy.toyback.code.AppRole;
-import com.toy.toyback.login.dto.SignUpRequest;
 import com.toy.toyback.login.entity.RefreshTokenEntity;
 import com.toy.toyback.jwt.JwtProvider;
 import com.toy.toyback.login.entity.SignUpEntity;
@@ -52,12 +49,22 @@ public class UserController {
                 .body(new LoginResponse(rtMsg));
     }
 
+    /**
+     * ID 중복 여부 확인
+     * true  → 사용 가능
+     * false → 이미 존재
+     */
+    @PostMapping("/id-check")
+    public ResponseEntity<IdCheckResponse> checkUserId(@RequestBody IdCheckRequest idCheckRequest) {
+        boolean available = !userService.existsUserId(idCheckRequest);
+        return ResponseEntity.ok(new IdCheckResponse(available));
+    }
+
     @PostMapping("/test")
     public ResponseEntity<LoginResponse> login() {
         return ResponseEntity.ok()
                 .body(new LoginResponse(bCryptPasswordEncoder.encode("test").toString()));
     }
-
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest, HttpServletRequest request, HttpServletResponse response) {
@@ -83,7 +90,6 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new LoginResponse("로그인 실패"));
         }
-
     }
 
     // 로그아웃 엔드포인트
