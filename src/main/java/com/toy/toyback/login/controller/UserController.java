@@ -1,5 +1,6 @@
 package com.toy.toyback.login.controller;
 
+import com.toy.toyback.code.ErrorCode;
 import com.toy.toyback.login.dto.*;
 import com.toy.toyback.code.AppRole;
 import com.toy.toyback.login.entity.RefreshTokenEntity;
@@ -23,6 +24,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/users")
@@ -41,13 +45,16 @@ public class UserController {
 
     @PostMapping("/signup")
     public ResponseEntity<LoginResponse> signup(@RequestBody @Valid SignUpRequest signUpRequest, HttpServletRequest request, HttpServletResponse response) {
-    	UserEntity signUpEntity = signUpRequest.toEntity();
-        String rtMsg = userService.SignUp(signUpEntity);
+    	  UserEntity signUpEntity = signUpRequest.toEntity();
+        LoginResponse res = userService.SignUp(signUpEntity);
+
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer ");
-        return ResponseEntity.ok()
-                .headers(headers)
-                .body(new LoginResponse(rtMsg));
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(new LoginResponse(ErrorCode.SUCCESS.getCode(),
+                                         ErrorCode.SUCCESS.getTitle()));
     }
 
     /**
@@ -64,7 +71,7 @@ public class UserController {
     @PostMapping("/test")
     public ResponseEntity<LoginResponse> login() {
         return ResponseEntity.ok()
-                .body(new LoginResponse(bCryptPasswordEncoder.encode("test").toString()));
+                .body(new LoginResponse("200", bCryptPasswordEncoder.encode("test").toString()));
     }
 
     @PostMapping("/login")
@@ -93,10 +100,10 @@ public class UserController {
             // 인증 성공 응답 반환 (JWT 포함)
             return ResponseEntity.ok()
                     .headers(headers)
-                    .body(new LoginResponse("로그인 성공"));
+                    .body(new LoginResponse("200","로그인 성공"));
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new LoginResponse("로그인 실패"));
+                    .body(new LoginResponse("200","로그인 실패"));
         }
     }
 
@@ -107,7 +114,7 @@ public class UserController {
         if (session != null) {
             session.invalidate();  // 세션 무효화
         }
-        return ResponseEntity.ok(new LoginResponse("로그아웃 성공"));
+        return ResponseEntity.ok(new LoginResponse("200", "로그아웃 성공"));
     }
 
     // refresh Access Token By using refreshToken
@@ -153,16 +160,16 @@ public class UserController {
                         // 인증 성공 응답 반환 (JWT 포함)
                         return ResponseEntity.ok()
                                 .headers(headers)
-                                .body(new LoginResponse("재발급 성공"));
+                                .body(new LoginResponse("200", "재발급 성공"));
                     }
                 }
             }
             //exception 토큰없음
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new LoginResponse("로그인 실패"));
+                    .body(new LoginResponse("200", "로그인 실패"));
         }catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new LoginResponse("로그인 실패"));
+                    .body(new LoginResponse("200", "로그인 실패"));
         }
     }
 

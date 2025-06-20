@@ -1,9 +1,12 @@
 package com.toy.toyback.login.service;
 
+import com.toy.toyback.code.ErrorCode;
+import com.toy.toyback.exceptions.BusinessException;
 import com.toy.toyback.login.dto.IdCheckRequest;
 import com.toy.toyback.login.dto.LoginDto;
 import com.toy.toyback.login.dto.LoginRequest;
 import com.toy.toyback.code.AppRole;
+import com.toy.toyback.login.dto.LoginResponse;
 import com.toy.toyback.login.entity.RefreshTokenEntity;
 import com.toy.toyback.jwt.JwtProvider;
 import com.toy.toyback.login.entity.SignUpEntity;
@@ -22,6 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Service
 public class UserService {
@@ -76,18 +80,22 @@ public class UserService {
         return new LoginDto.TokenResponse(accessToken, refreshToken);
     }
 
-    public String SignUp(UserEntity signUpEntity) {
+    public LoginResponse SignUp(UserEntity signUpEntity) {
         String userPassword = signUpEntity.getPassword();
         String encodedPassword = passwordEncoder.encode(userPassword);
+
         if (userRepository.existsByUserId(signUpEntity.getUserId())) {
-            return "회원가입 실패: 이미 존재하는 사용자 ID입니다.";
+            throw new BusinessException(ErrorCode.USER_DUPLICATE);
         }
         Integer result = signUpRepository.signUp(
                 signUpEntity.getUserId(),
                 encodedPassword,
                 signUpEntity.getName()
         );
-        return result > 0 ? "회원가입 성공" : "회원가입 실패";
+        return new LoginResponse(
+                ErrorCode.SUCCESS.getCode(),
+                ErrorCode.SUCCESS.getTitle()
+        );
     }
 
     public boolean existsUserId(IdCheckRequest idCheckRequest) {
